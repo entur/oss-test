@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  workflow_call:
+    outputs:
+      image_and_tag:
+        description: Fully qualified image reference
+        value: ${{ jobs.docker-push.outputs.image_and_tag }}
+
+jobs:
+  docker-lint:
+    name: Docker Lint
+    uses: entur/gha-docker/.github/workflows/lint.yml@v1
+    with:
+      dockerfile: Dockerfile
+
+  docker-build:
+    name: Docker Build
+    needs: [docker-lint]
+    uses: entur/gha-docker/.github/workflows/build.yml@v1
+    with:
+      dockerfile: Dockerfile
+
+  docker-scan:
+    name: Docker Scan
+    needs: [docker-build]
+    uses: entur/gha-security/.github/workflows/docker-scan.yml@v2
+    secrets: inherit
+    with:
+      image_artifact: ${{ needs.docker-build.outputs.image_artifact }}
+
+  docker-push:
+    name: Docker Push
+    needs: [docker-build]
+    uses: entur/gha-docker/.github/workflows/push.yml@v1
+    secrets: inherit
