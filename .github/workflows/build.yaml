@@ -1,0 +1,22 @@
+# Build Workflow
+#
+# Runs CI (lint, test, Docker build/scan/push) on every pull request.
+# The built image is tagged and pushed to the registry.
+
+name: Build
+
+on:
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - '**/*.md'
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    uses: ./.github/workflows/ci.yaml
+    secrets: inherit
