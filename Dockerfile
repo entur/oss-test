@@ -11,3 +11,4 @@ COPY --from=builder /go/bin/app /
 EXPOSE 8080
 USER 10001:10001
 CMD ["/app"]
+
