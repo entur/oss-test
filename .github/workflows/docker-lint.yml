@@ -1,0 +1,31 @@
+#
+# Shared Workflows - Docker Lint
+#
+# TODO: This file comes from entur/.github/workflows/docker-lint.yml
+#       Adopt to your needs, this file is yours now.
+#
+# Reusable Workflows used:
+# * Docker Lint
+#   * Readme <https://github.com/entur/gha-docker/blob/main/README-lint.md>
+#   * Owner: Team Plattform
+#   * Slack: #Talk-plattform
+#
+name: Docker Lint
+
+on:
+  push: # on push to any branch
+    paths: # only run on changes to the following files
+      - Dockerfile
+    branches-ignore: # ignore on default branch, as it is already checked in PR
+      - "main"
+  pull_request: # on pull request to any branch
+    paths:
+      - Dockerfile
+
+jobs:
+  docker-lint:
+    name: Docker Lint
+    uses: entur/gha-docker/.github/workflows/lint.yml@v1
+    with:
+      dockerfile: Dockerfile
+      # ignore: DL3008 # Example ignore: Ignore warning about pinning versions https://github.com/hadolint/hadolint/wiki/DL3008
