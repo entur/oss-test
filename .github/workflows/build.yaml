@@ -1,7 +1,9 @@
 # Build Workflow
 #
-# Runs CI (lint, test, Docker build/scan/push) on every pull request.
-# The built image is tagged and pushed to the registry.
+# Runs CI (lint, Docker build/scan/push) on every pull request and on every
+# push to main (i.e. after a PR is merged). On PR events, ci.yaml only lints
+# the Dockerfile; on push events, it also builds, scans, pushes the image
+# and (TODO) dispatches a deploy to oss-test-deployment-config.
 
 name: Build
 
@@ -10,10 +12,18 @@ on:
     branches: [main]
     paths-ignore:
       - '**/*.md'
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**/*.md'
 
 concurrency:
-  group: build-${{ github.ref }}
-  cancel-in-progress: true
+  # Separate groups per event so a push-to-main run (which triggers a deploy)
+  # can never be cancelled by a later PR run on the same ref, and vice versa.
+  group: build-${{ github.event_name }}-${{ github.ref }}
+  # Cancel stale PR runs when new commits arrive, but never cancel a push-to-main
+  # run that is on its way to a deploy.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
